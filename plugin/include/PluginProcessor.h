@@ -3,6 +3,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_audio_basics/juce_audio_basics.h>
 
+#include <pluginTemplateCore/DspProcessor.h>
 
 class JucePluginTemplateAudioProcessor  : public juce::AudioProcessor
 {
@@ -37,7 +38,7 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
       [[nodiscard]] juce::AudioProcessorValueTreeState& getValueTreeState() noexcept {
-    return valueTreeState;
+    return _valueTreeState;
   }
 
 
@@ -52,7 +53,8 @@ private:
 
     Parameters parameters;
 
-    juce::AudioProcessorValueTreeState valueTreeState;
+    juce::AudioProcessorValueTreeState _valueTreeState;
+    DspProcessor _dspProcessor;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JucePluginTemplateAudioProcessor)
 };

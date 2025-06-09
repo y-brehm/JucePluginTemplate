@@ -14,7 +14,7 @@ JucePluginTemplateAudioProcessor::JucePluginTemplateAudioProcessor()
                         .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                       #endif
                    ),
-    valueTreeState {*this, nullptr, "Parameters", createParameterLayout(parameters)}
+    _valueTreeState {*this, nullptr, "Parameters", createParameterLayout(parameters)}
 {
 }
 
@@ -127,18 +127,13 @@ void JucePluginTemplateAudioProcessor::processBlock (juce::AudioBuffer<float>& b
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
-    if (parameters.bypass->get() || buffer.getNumSamples() == 0)
+    const bool isBypassed = *_valueTreeState.getRawParameterValue(BYPASS.getParamID());
+    const float gainValue = *_valueTreeState.getRawParameterValue(GAIN.getParamID());
+
+    if (isBypassed || buffer.getNumSamples() == 0)
         return;
 
-
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
-        {
-            channelData[sample] *= parameters.gain->get();
-        }
-    }
+    _dspProcessor.process(buffer, gainValue);
 }
 
 //==============================================================================
@@ -162,7 +157,7 @@ juce::AudioProcessorEditor* JucePluginTemplateAudioProcessor::createEditor()
 void JucePluginTemplateAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     // Use APVTS to get the state
-    auto state = valueTreeState.copyState(); // Get the ValueTree state
+    auto state = _valueTreeState.copyState(); // Get the ValueTree state
     std::unique_ptr<juce::XmlElement> xml (state.createXml());
     if (xml != nullptr)
         copyXmlToBinary (*xml, destData);
@@ -173,8 +168,8 @@ void JucePluginTemplateAudioProcessor::setStateInformation (const void* data, in
     // Use APVTS to restore the state
     std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
-        if (xmlState->hasTagName (valueTreeState.state.getType())) // Check if it's our state
-            valueTreeState.replaceState (juce::ValueTree::fromXml (*xmlState));
+        if (xmlState->hasTagName (_valueTreeState.state.getType())) // Check if it's our state
+            _valueTreeState.replaceState (juce::ValueTree::fromXml (*xmlState));
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout

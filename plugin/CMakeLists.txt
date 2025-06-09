@@ -56,6 +56,8 @@ juce_add_binary_data(WebUIDataEmbed
     SOURCES ${WEB_UI_ZIP_FILE}
 )
 
+add_subdirectory(pluginTemplateCore)
+
 # --- JUCE Plugin Target ---
 juce_add_plugin(${PLUGIN_NAME}
     VERSION ${PLUGIN_VERSION}
@@ -125,7 +127,7 @@ target_link_libraries(${PLUGIN_NAME}
         juce::juce_graphics           # 2D drawing
         juce::juce_gui_basics         # Basic GUI elements
         juce::juce_gui_extra          # For WebBrowserComponent and other advanced GUI
-
+        pluginTemplateCore
         WebUIDataEmbed                # Link the target created by juce_add_binary_data
 )
 
