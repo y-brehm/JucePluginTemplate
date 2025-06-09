@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plugin UI</title>
+    <style>
+        /* A simple, modern, dark-themed style for the UI */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #2b2b2b;
+            color: #e0e0e0;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+        h1 {
+            margin: 0 0 30px 0;
+            font-weight: 500;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+        input[type="range"] {
+            width: 250px;
+            cursor: pointer;
+        }
+        .bypass-group {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .bypass-group label {
+            margin: 0 0 0 8px; /* Adjust label position relative to checkbox */
+        }
+    </style>
+</head>
+<body>
+    <h1>Gain Control</h1>
+
+    <div class="control-group">
+        <label for="gainSlider">Gain</label>
+        <input type="range" id="gainSlider" min="0.0" max="1.0" step="0.001">
+    </div>
+
+    <div class="control-group bypass-group">
+        <input type="checkbox" id="bypassCheckbox">
+        <label for="bypassCheckbox">Bypass</label>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

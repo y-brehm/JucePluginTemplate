@@ -1,0 +1,7 @@
+build/
+plugin/WebUI/js/juce/
+
+.DS_Store
+.cache
+compile_commands.json
+
