@@ -5,4 +5,4 @@ if(NOT TARGET juce::juce_core)
     add_subdirectory(ThirdParty/JUCE juce_build)
 endif()
 
-add_subdirectory(plugin)
+add_subdirectory(pluginTemplate)

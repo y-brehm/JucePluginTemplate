@@ -1,5 +1,5 @@
 build/
-plugin/WebUI/js/juce/
+pluginTemplate/WebUI/js/juce/
 
 .DS_Store
 .cache
