@@ -65,7 +65,7 @@ juce_add_plugin(${PLUGIN_NAME}
     PLUGIN_MANUFACTURER_CODE ${PLUGIN_MANUFACTURER_CODE}
     PLUGIN_CODE ${PLUGIN_CODE}
     # Specify plugin formats (can be a list: VST3 AU AAX Standalone etc.)
-    FORMATS VST3
+    FORMATS VST3 AU
 
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
