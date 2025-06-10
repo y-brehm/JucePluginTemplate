@@ -12,14 +12,19 @@ JucePluginTemplateAudioProcessorEditor::JucePluginTemplateAudioProcessorEditor (
       bypassRelay{BYPASS.getParamID()},
       webBrowserComponent(juce::WebBrowserComponent::Options{}
                               .withBackend(juce::WebBrowserComponent::Options::Backend::webview2)
+                              .withWinWebView2Options(
+                                  juce::WebBrowserComponent::Options::WinWebView2{}
+                                      .withBackgroundColour(juce::Colours::white)
+                                      // this may be necessary for some DAWs; include for safety
+                                      .withUserDataFolder(juce::File::getSpecialLocation(
+                                          juce::File::SpecialLocationType::tempDirectory)))
+                              .withNativeIntegrationEnabled() // Crucial for window.JUCE object and .withNativeFunction
                               .withResourceProvider(
                                   [](const auto& url)
                                   {
                                       return getWebResource(url);
                                   },
                                   juce::URL {LOCAL_DEV_SERVER_ADDRESS}.getOrigin())
-                              .withNativeIntegrationEnabled() // Crucial for window.JUCE object and .withNativeFunction
-                              .withWinWebView2Options(juce::WebBrowserComponent::Options::WinWebView2{})
                               .withOptionsFrom(gainRelay)
                               .withOptionsFrom(bypassRelay)
                              ),

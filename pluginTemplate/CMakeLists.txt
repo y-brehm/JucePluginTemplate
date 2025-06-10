@@ -13,6 +13,23 @@ set(PLUGIN_BUNDLE_ID "com.yourcompany.PluginTemplate")
 # copy JUCE frontend library to plugin UI files
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/juce/modules/juce_gui_extra/native/javascript/" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/WebUI/js/juce/")
 
+# install Windows webView requirements
+if(WIN32)
+    find_program(NUGET_EXE NAMES nuget)
+    if(NOT NUGET_EXE)
+        message(FATAL_ERROR "NUGET.EXE not found. Please install this executable and add it to your PATH, then run CMake again.")
+    endif()
+    execute_process(COMMAND ${NUGET_EXE} install "Microsoft.Web.WebView2" -OutputDirectory ${CMAKE_BINARY_DIR}/packages
+                    RESULT_VARIABLE NUGET_RESULT
+                    ERROR_VARIABLE NUGET_ERROR)
+    if(NOT NUGET_RESULT EQUAL 0)
+         message(FATAL_ERROR "Failed to install WebView2 package using NuGet. Error: ${NUGET_ERROR}")
+    endif()
+    set(WEBVIEW2_NUGET_VERSION "1.0.2478.35")
+    set(WEBVIEW2_NUGET_BASE_PATH "${CMAKE_BINARY_DIR}/packages/Microsoft.Web.WebView2.${WEBVIEW2_NUGET_VERSION}")
+    set(JUCE_WEBVIEW2_PACKAGE_LOCATION "${CMAKE_BINARY_DIR}/packages")
+endif()
+
 # --- Binary Data for Web UI ---
 # This command embeds your HTML/CSS/JS files into the plugin binary.
 # The files will be accessible in C++ via the 'BinaryData' namespace.
@@ -78,6 +95,8 @@ juce_add_plugin(${PLUGIN_NAME}
     PLUGIN_AU_BUNDLE_ID ${PLUGIN_BUNDLE_ID}
     PLUGIN_VST3_CATEGORIES "Fx"             
     PLUGIN_DESCRIPTION ${PLUGIN_DESCRIPTION}
+    NEEDS_WEB_BROWSER TRUE
+    NEEDS_WEBVIEW2 TRUE
 )
 
 add_dependencies(${PLUGIN_NAME} PackageWebApp)
