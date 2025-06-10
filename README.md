@@ -32,28 +32,27 @@ The tools were tested with: `Apple Clang 14`, `CMake 3.30`, `Ninja 1.12`, `Git 2
     ```bash
     xcode-select --install
     ```
-2.  **Install Tools with Homebrew**:
+2.  **Install Xcode from the macOS App-Store or use ninja as a sleek generator**:
+    The App-Store version of ninja is not necessarily needed in case you use ninja as a generator.
+    There might occur some issues if you want to create AU-plugins with ninja though.
+
+3.  **Install Tools with a packet manager like Homebrew**:
+    Brew is a terminal installer for macOS and Linux. Download and install from [brew.sh](https://brew.sh/).
+
+    In case you decided to get Xcode from the App-Store you can skip ninja.
     ```bash
-    brew install cmake ninja git
+    brew install cmake ninja
     ```
 
 #### Windows
 
-1.  **Install C++ Compiler**: Install **Visual Studio 2022** with the **"Desktop development with C++"** workload. This provides the required MSVC compiler toolchain.
+1.  **Install C++ Compiler**: Install **Visual Studio 2022** with the **"Desktop development with C++"** workload. This provides the required MSVC compiler toolchain. Download and install from [visualstudio.microsoft.com](https://visualstudio.microsoft.com/).
 
 2.  **Install Git for Windows**: Download and install from [git-scm.com](https://git-scm.com/download/win). This also provides **Git Bash**, which is required to run the renaming script.
 
-3.  **Install Tools with Scoop**: Scoop is a command-line installer for Windows.
+3.  **Install Tools with Scoop**: Scoop is a command-line installer for Windows. Download and install from [scoop.sh](https://scoop.sh/).
 
-      * First, ensure you can run scripts by opening PowerShell and running:
-        ```powershell
-        Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-        ```
-      * Then, install Scoop:
-        ```powershell
-        irm get.scoop.sh | iex
-        ```
-      * Finally, install CMake and Ninja:
+      * Use scoop to, install CMake, nuget (needed to install the Windows Web View package in a future CMake step) and optionally Ninja (sleek CMake generator):
         ```powershell
         scoop install cmake ninja
         ```
@@ -85,7 +84,14 @@ This project uses CMake and Ninja for fast builds.
 
 1.  **Configure the project**: Run CMake to generate the build files. This command creates a `build` directory.
     ```bash
-    cmake -B build -G Ninja
+    # macOS
+    cmake -G "Xcode" -B build 
+
+    # Windows
+    cmake -G "Visual Studio 17 2022" -B build
+
+    # in case you installed Ninja
+    cmake -G Ninja -B build 
     ```
 2.  **Run the build**:
     ```bash
