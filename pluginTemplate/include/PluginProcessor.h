@@ -2,6 +2,7 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_audio_basics/juce_audio_basics.h>
+#include <juce_dsp/juce_dsp.h>
 
 #include <pluginTemplateCore/DspProcessor.h>
 
@@ -34,12 +35,15 @@ public:
     const juce::String getProgramName (int index) override;
     void changeProgramName (int index, const juce::String& newName) override;
 
+    std::atomic<float> outputLevelLeft;
+
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
       [[nodiscard]] juce::AudioProcessorValueTreeState& getValueTreeState() noexcept {
     return _valueTreeState;
   }
+
 
 
 private:
@@ -55,6 +59,9 @@ private:
 
     juce::AudioProcessorValueTreeState _valueTreeState;
     DspProcessor _dspProcessor;
+
+    juce::dsp::BallisticsFilter<float> envelopeFollower;
+    juce::AudioBuffer<float> envelopeFollowerOutputBuffer;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JucePluginTemplateAudioProcessor)
 };

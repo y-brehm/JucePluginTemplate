@@ -90,7 +90,18 @@ void JucePluginTemplateAudioProcessor::changeProgramName (int index, const juce:
 //==============================================================================
 void JucePluginTemplateAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    juce::ignoreUnused (sampleRate, samplesPerBlock);
+    envelopeFollower.prepare(juce::dsp::ProcessSpec{
+            .sampleRate = sampleRate,
+            .maximumBlockSize = static_cast<juce::uint32>(samplesPerBlock),
+            .numChannels = static_cast<juce::uint32>(getTotalNumInputChannels())
+            });
+    envelopeFollower.setAttackTime(200.0f);
+    envelopeFollower.setReleaseTime(200.0f);
+    envelopeFollower.setLevelCalculationType(
+            juce::dsp::BallisticsFilter<float>::LevelCalculationType::peak
+            );
+
+    envelopeFollowerOutputBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
 }
 
 void JucePluginTemplateAudioProcessor::releaseResources()
@@ -134,6 +145,16 @@ void JucePluginTemplateAudioProcessor::processBlock (juce::AudioBuffer<float>& b
         return;
 
     _dspProcessor.process(buffer, gainValue);
+
+    const auto inBlock = juce::dsp::AudioBlock<float>(buffer).getSubsetChannelBlock(
+            0u, static_cast<size_t>(getTotalNumOutputChannels())
+            );
+    auto outBlock = juce::dsp::AudioBlock<float>{envelopeFollowerOutputBuffer};
+
+    envelopeFollower.process(juce::dsp::ProcessContextNonReplacing<float>{inBlock, outBlock});
+
+    auto last_sample = outBlock.getNumSamples() - 1;
+    outputLevelLeft = juce::Decibels::gainToDecibels(outBlock.getSample(0u, static_cast<int>(last_sample)));
 }
 
 //==============================================================================

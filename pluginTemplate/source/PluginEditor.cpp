@@ -20,9 +20,9 @@ JucePluginTemplateAudioProcessorEditor::JucePluginTemplateAudioProcessorEditor (
                                           juce::File::SpecialLocationType::tempDirectory)))
                               .withNativeIntegrationEnabled() // Crucial for window.JUCE object and .withNativeFunction
                               .withResourceProvider(
-                                  [](const auto& url)
+                                  [this](const auto& url)
                                   {
-                                      return getWebResource(url);
+                                      return getWebResource(url, processorRef.outputLevelLeft.load());
                                   },
                                   juce::URL {LOCAL_DEV_SERVER_ADDRESS}.getOrigin())
                               .withOptionsFrom(gainRelay)
@@ -43,6 +43,8 @@ JucePluginTemplateAudioProcessorEditor::JucePluginTemplateAudioProcessorEditor (
 
     webBrowserComponent.goToURL(webBrowserComponent.getResourceProviderRoot());
     // webBrowserComponent.goToURL("https://www.juce.com"); // toString(true) for proper URL encoding
+    
+    startTimer(60);
 }
 
 JucePluginTemplateAudioProcessorEditor::~JucePluginTemplateAudioProcessorEditor()
@@ -66,4 +68,10 @@ void JucePluginTemplateAudioProcessorEditor::resized()
     // If you add any child components, this is where you'd
     // update their positions.
     webBrowserComponent.setBounds (getLocalBounds());
+}
+
+void JucePluginTemplateAudioProcessorEditor::timerCallback()
+{
+    webBrowserComponent.emitEventIfBrowserIsVisible("outputLevel", juce::var{});
+
 }

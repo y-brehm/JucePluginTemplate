@@ -54,7 +54,7 @@ The tools were tested with: `Apple Clang 14`, `CMake 3.30`, `Ninja 1.12`, `Git 2
 
       * Use scoop to, install CMake, nuget (needed to install the Windows Web View package in a future CMake step) and optionally Ninja (sleek CMake generator):
         ```powershell
-        scoop install cmake ninja
+        scoop install cmake ninja nuget
         ```
 
 ### Step 3: Clone Your New Repository

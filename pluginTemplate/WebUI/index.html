@@ -6,18 +6,26 @@
     <title>Plugin UI</title>
     <style>
         /* A simple, modern, dark-themed style for the UI */
+        :root {
+            --meter-height: 250px;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 50px; /* Add space between controls and meter */
             height: 100vh;
             margin: 0;
             background-color: #2b2b2b;
             color: #e0e0e0;
             box-sizing: border-box;
             padding: 20px;
+        }
+        .controls-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         h1 {
             margin: 0 0 30px 0;
@@ -46,20 +54,109 @@
         .bypass-group label {
             margin: 0 0 0 8px; /* Adjust label position relative to checkbox */
         }
+
+        /* --- Metering Styles --- */
+        .meter-section-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .meter-display-container {
+            display: flex;
+            gap: 8px; /* Space between axis and meter bar */
+        }
+
+        /* --- CORRECTED AXIS STYLES --- */
+        .meter-axis {
+            position: relative; /* Containing block for absolute positioning */
+            width: 30px; /* Give it some width */
+            height: var(--meter-height);
+            font-size: 0.7em;
+            color: #999;
+        }
+        .meter-axis span {
+            position: absolute;
+            right: 0; /* Align to the right of the axis container */
+            transform: translateY(50%); /* Center text vertically on its position */
+        }
+        /*
+           Positions are calculated as: ((label_dB - min_dB) / (max_dB - min_dB)) * 100
+           Range = 6 - (-60) = 66
+        */
+        .meter-axis .db-plus-6 { bottom: 100%; }     /* (6 - (-60)) / 66 = 100% */
+        .meter-axis .db-0 { bottom: 90.9%; }      /* (0 - (-60)) / 66 = 90.9% */
+        .meter-axis .db-minus-6 { bottom: 81.8%; }   /* (-6 - (-60)) / 66 = 81.8% */
+        .meter-axis .db-minus-18 { bottom: 63.6%; }  /* (-18 - (-60)) / 66 = 63.6% */
+        .meter-axis .db-minus-36 { bottom: 36.4%; }  /* (-36 - (-60)) / 66 = 36.4% */
+        .meter-axis .db-minus-60 { bottom: 0%; }     /* (-60 - (-60)) / 66 = 0% */
+
+
+        #peak-meter {
+            width: 28px;
+            height: var(--meter-height);
+            border: 1px solid #555;
+            background-color: #333;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column-reverse; /* Makes the bar fill from bottom to top */
+            overflow: hidden;
+        }
+        #meter-bar {
+            width: 100%;
+            height: 0%; /* Start empty */
+            background-color: #00ff00; /* Default color (green) */
+            transition: height 0.05s linear, background-color 0.1s linear;
+        }
+        #peak-value {
+            margin-top: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1em;
+            color: #fff;
+            background-color: #3a3a3a;
+            padding: 4px 8px;
+            border-radius: 4px;
+            width: 80px;
+            text-align: center;
+        }
+        .meter-label {
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
-    <h1>Gain Control</h1>
+    <div class="controls-container">
+        <h1>Gain Control</h1>
 
-    <div class="control-group">
-        <label for="gainSlider">Gain</label>
-        <input type="range" id="gainSlider" min="0.0" max="1.0" step="0.001">
+        <div class="control-group">
+            <label for="gainSlider">Gain</label>
+            <input type="range" id="gainSlider" min="0.0" max="1.0" step="0.001">
+        </div>
+
+        <div class="control-group bypass-group">
+            <input type="checkbox" id="bypassCheckbox">
+            <label for="bypassCheckbox">Bypass</label>
+        </div>
     </div>
 
-    <div class="control-group bypass-group">
-        <input type="checkbox" id="bypassCheckbox">
-        <label for="bypassCheckbox">Bypass</label>
+    <div class="meter-section-container">
+        <div class="meter-display-container">
+            <div class="meter-axis">
+                <span class="db-plus-6">+6</span>
+                <span class="db-0">0</span>
+                <span class="db-minus-6">-6</span>
+                <span class="db-minus-18">-18</span>
+                <span class="db-minus-36">-36</span>
+                <span class="db-minus-60">-60</span>
+            </div>
+            <div id="peak-meter">
+                <div id="meter-bar"></div>
+            </div>
+        </div>
+        <div id="peak-value">-inf dB</div>
+        <label class="meter-label">Output Level (Peak)</label>
     </div>
+
 
     <script type="module" src="js/app.js"></script>
 </body>

@@ -72,7 +72,7 @@ namespace
     }
 }
 
-static inline std::optional<Resource> getWebResource(const juce::String& url)
+static inline std::optional<Resource> getWebResource(const juce::String& url, const float outputLevel)
 {
     const auto resourceToRetrieve = url == "/" ? "index.html" : url.fromFirstOccurrenceOf("/", false, false);
 
@@ -81,6 +81,17 @@ static inline std::optional<Resource> getWebResource(const juce::String& url)
     {
         const auto extension = resourceToRetrieve.fromLastOccurrenceOf(".", false, false);
         return Resource {std::move(resource), getMimeForExtension(extension)};
+    }
+
+    if (resourceToRetrieve == "outputLevel.json")
+    {
+        juce::DynamicObject::Ptr data{new juce::DynamicObject{}};
+        data->setProperty("left", outputLevel);
+        const auto string = juce::JSON::toString(data.get());
+        juce::MemoryInputStream stream {string.getCharPointer(),
+                                        string.getNumBytesAsUTF8(), false};
+
+        return Resource{streamToVector(stream), juce::String{"application/json"}};
     }
 
     juce::Logger::writeToLog("Resource not found: " + resourceToRetrieve);

@@ -3,7 +3,8 @@
 #include "PluginProcessor.h"
 #include <juce_gui_extra/juce_gui_extra.h>
 
-class JucePluginTemplateAudioProcessorEditor  : public juce::AudioProcessorEditor
+class JucePluginTemplateAudioProcessorEditor  : public juce::AudioProcessorEditor,
+                                                private juce::Timer
 {
 public:
     explicit JucePluginTemplateAudioProcessorEditor (JucePluginTemplateAudioProcessor&);
@@ -11,6 +12,8 @@ public:
 
     void paint (juce::Graphics&) override;
     void resized() override;
+
+    void timerCallback() override;
 
 private:
     JucePluginTemplateAudioProcessor& processorRef;

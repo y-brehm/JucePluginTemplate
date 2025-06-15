@@ -138,6 +138,7 @@ target_link_libraries(${PLUGIN_NAME}
         juce::juce_audio_processors   
         juce::juce_audio_utils        
         juce::juce_core               
+        juce::juce_dsp
         juce::juce_data_structures    
         juce::juce_events             
         juce::juce_graphics           
