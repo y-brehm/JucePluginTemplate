@@ -7,10 +7,10 @@
 
 JucePluginTemplateAudioProcessorEditor::JucePluginTemplateAudioProcessorEditor (JucePluginTemplateAudioProcessor& p)
     : AudioProcessorEditor (&p),
-      processorRef (p),
-      gainRelay{GAIN.getParamID()},
-      bypassRelay{BYPASS.getParamID()},
-      webBrowserComponent(juce::WebBrowserComponent::Options{}
+      _processorRef (p),
+      _gainRelay{GAIN.getParamID()},
+      _bypassRelay{BYPASS.getParamID()},
+      _webBrowserComponent(juce::WebBrowserComponent::Options{}
                               .withBackend(juce::WebBrowserComponent::Options::Backend::webview2)
                               .withWinWebView2Options(
                                   juce::WebBrowserComponent::Options::WinWebView2{}
@@ -22,29 +22,42 @@ JucePluginTemplateAudioProcessorEditor::JucePluginTemplateAudioProcessorEditor (
                               .withResourceProvider(
                                   [this](const auto& url)
                                   {
-                                      return getWebResource(url, processorRef.outputLevelLeft.load());
+                                      return getWebResource(url, _dynamicResourceProvider);
                                   },
                                   juce::URL {LOCAL_DEV_SERVER_ADDRESS}.getOrigin())
-                              .withOptionsFrom(gainRelay)
-                              .withOptionsFrom(bypassRelay)
+                              .withOptionsFrom(_gainRelay)
+                              .withOptionsFrom(_bypassRelay)
                              ),
-      gainSliderAttachment{
-          *processorRef.getValueTreeState().getParameter(GAIN.getParamID()),
-          gainRelay,
+      _gainSliderAttachment{
+          *_processorRef.getValueTreeState().getParameter(GAIN.getParamID()),
+          _gainRelay,
           nullptr},
-      bypassAttachment{
-          *processorRef.getValueTreeState().getParameter(BYPASS.getParamID()),
-          bypassRelay,
+      _bypassAttachment{
+          *_processorRef.getValueTreeState().getParameter(BYPASS.getParamID()),
+          _bypassRelay,
           nullptr}
 {
+    registerDynamicEndpoints();
 
-    addAndMakeVisible(webBrowserComponent);
+    addAndMakeVisible(_webBrowserComponent);
     setSize (600, 400);
 
-    webBrowserComponent.goToURL(webBrowserComponent.getResourceProviderRoot());
-    // webBrowserComponent.goToURL("https://www.juce.com"); // toString(true) for proper URL encoding
+    _webBrowserComponent.goToURL(_webBrowserComponent.getResourceProviderRoot());
+    // webBrowserComponent.goToURL("https://www.google.com"); // toString(true) for proper URL encoding
     
     startTimer(60);
+}
+
+void JucePluginTemplateAudioProcessorEditor::registerDynamicEndpoints()
+{
+    _dynamicResourceProvider.registerHandler(
+        "outputLevel.json",
+        [this]
+        {
+            juce::DynamicObject::Ptr data{new juce::DynamicObject{}};
+            data->setProperty("output", _processorRef.getMonoOutputPeakLevelDb());
+            return DynamicResourceProvider::createJsonResource(data.get());
+        });
 }
 
 JucePluginTemplateAudioProcessorEditor::~JucePluginTemplateAudioProcessorEditor()
@@ -58,20 +71,16 @@ JucePluginTemplateAudioProcessorEditor::~JucePluginTemplateAudioProcessorEditor(
 //==============================================================================
 void JucePluginTemplateAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    // (Our component is covered by the web browser, but good to have a background)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 }
 
 void JucePluginTemplateAudioProcessorEditor::resized()
 {
-    // This is called when the MainContentComponentis resized.
-    // If you add any child components, this is where you'd
-    // update their positions.
-    webBrowserComponent.setBounds (getLocalBounds());
+    _webBrowserComponent.setBounds (getLocalBounds());
 }
 
 void JucePluginTemplateAudioProcessorEditor::timerCallback()
 {
-    webBrowserComponent.emitEventIfBrowserIsVisible("outputLevel", juce::var{});
+    _webBrowserComponent.emitEventIfBrowserIsVisible("outputLevel", juce::var{});
 
 }

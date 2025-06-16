@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "DynamicResourceProvider.h"
 #include <juce_gui_extra/juce_gui_extra.h>
 
 class JucePluginTemplateAudioProcessorEditor  : public juce::AudioProcessorEditor,
@@ -16,15 +17,16 @@ public:
     void timerCallback() override;
 
 private:
-    JucePluginTemplateAudioProcessor& processorRef;
+    void registerDynamicEndpoints();
 
-    juce::WebSliderRelay gainRelay;
-    juce::WebToggleButtonRelay bypassRelay;
-    
-    juce::WebBrowserComponent webBrowserComponent;
-    
-    juce::WebSliderParameterAttachment gainSliderAttachment;
-    juce::WebToggleButtonParameterAttachment bypassAttachment;
+    JucePluginTemplateAudioProcessor& _processorRef;
+    DynamicResourceProvider _dynamicResourceProvider;
+
+    juce::WebSliderRelay _gainRelay;
+    juce::WebToggleButtonRelay _bypassRelay;
+    juce::WebBrowserComponent _webBrowserComponent;
+    juce::WebSliderParameterAttachment _gainSliderAttachment;
+    juce::WebToggleButtonParameterAttachment _bypassAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JucePluginTemplateAudioProcessorEditor)
 };

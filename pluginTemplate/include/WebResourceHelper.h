@@ -1,5 +1,7 @@
 #pragma once
 
+#include "WebUtils.h"
+#include "DynamicResourceProvider.h"
 #include <juce_core/juce_core.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_gui_extra/juce_gui_extra.h>
@@ -37,16 +39,6 @@ namespace
         return "";
     }
 
-    static inline auto streamToVector(InputStream& stream)
-    {
-        std::vector<std::byte> result((size_t) stream.getTotalLength());
-        stream.setPosition(0);
-        [[maybe_unused]] const auto bytesRead = stream.read(result.data(), result.size());
-        jassert(bytesRead == (ssize_t) result.size());
-
-        return result;
-    }
-
     static inline std::vector<std::byte> getWebViewFileAsBytes(const juce::String& filepath)
     {
         juce::MemoryInputStream zipStream {BinaryData::WebUI_zip, BinaryData::WebUI_zipSize, false};
@@ -68,34 +60,40 @@ namespace
             return {};
         }
 
-        return streamToVector(*entryStream);
+        return WebUtils::streamToVector(*entryStream);
+    }
+    static inline std::optional<Resource> getStaticFileResource(const juce::String& filepath)
+    {
+        juce::MemoryInputStream zipStream {BinaryData::WebUI_zip, BinaryData::WebUI_zipSize, false};
+        juce::ZipFile zipFile {zipStream};
+
+        if (const auto* zipEntry = zipFile.getEntry(filepath))
+        {
+            if (const std::unique_ptr<juce::InputStream> entryStream {zipFile.createStreamForEntry(*zipEntry)})
+            {
+                std::vector<std::byte> resourceBytes((size_t) entryStream->getTotalLength());
+                entryStream->read(resourceBytes.data(), resourceBytes.size());
+
+                const auto extension = filepath.fromLastOccurrenceOf(".", false, false);
+                return Resource {std::move(resourceBytes), getMimeForExtension(extension)};
+            }
+        }
+        
+        return std::nullopt;
     }
 }
 
-static inline std::optional<Resource> getWebResource(const juce::String& url, const float outputLevel)
+
+static inline std::optional<Resource> getWebResource(const juce::String& url, const DynamicResourceProvider& dynamicResourceProvider)
 {
-    const auto resourceToRetrieve = url == "/" ? "index.html" : url.fromFirstOccurrenceOf("/", false, false);
+    const auto resourceToRetrieve = (url == "/") ? "index.html" : url.fromFirstOccurrenceOf("/", false, false);
 
-    const auto resource = getWebViewFileAsBytes(resourceToRetrieve);
-    if (!resource.empty())
-    {
-        const auto extension = resourceToRetrieve.fromLastOccurrenceOf(".", false, false);
-        return Resource {std::move(resource), getMimeForExtension(extension)};
-    }
+    if (auto dynamicResource = dynamicResourceProvider.handleRequest(resourceToRetrieve))
+        return dynamicResource;
 
-    if (resourceToRetrieve == "outputLevel.json")
-    {
-        juce::DynamicObject::Ptr data{new juce::DynamicObject{}};
-        data->setProperty("left", outputLevel);
-        const auto string = juce::JSON::toString(data.get());
-        juce::MemoryInputStream stream {string.getCharPointer(),
-                                        string.getNumBytesAsUTF8(), false};
-
-        return Resource{streamToVector(stream), juce::String{"application/json"}};
-    }
-
+    if (auto staticResource = getStaticFileResource(resourceToRetrieve))
+        return staticResource;
+    
     juce::Logger::writeToLog("Resource not found: " + resourceToRetrieve);
-
     return std::nullopt;
 }
-

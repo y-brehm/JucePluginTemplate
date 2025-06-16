@@ -5,6 +5,7 @@
 #include <juce_dsp/juce_dsp.h>
 
 #include <pluginTemplateCore/DspProcessor.h>
+#include <pluginTemplateCore/PeakLevelMeter.h>
 
 class JucePluginTemplateAudioProcessor  : public juce::AudioProcessor
 {
@@ -35,14 +36,16 @@ public:
     const juce::String getProgramName (int index) override;
     void changeProgramName (int index, const juce::String& newName) override;
 
-    std::atomic<float> outputLevelLeft;
-
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-      [[nodiscard]] juce::AudioProcessorValueTreeState& getValueTreeState() noexcept {
-    return _valueTreeState;
-  }
+    [[nodiscard]] juce::AudioProcessorValueTreeState& getValueTreeState() noexcept {
+        return _valueTreeState;
+    }
+
+    [[nodiscard]] float getOutputPeakLevelDb(int channel) const;
+
+    [[nodiscard]] float getMonoOutputPeakLevelDb() const;
 
 
 
@@ -55,13 +58,11 @@ private:
     [[nodiscard]] static juce::AudioProcessorValueTreeState::ParameterLayout
     createParameterLayout(Parameters&);
 
-    Parameters parameters;
+    Parameters _parameters;
 
     juce::AudioProcessorValueTreeState _valueTreeState;
     DspProcessor _dspProcessor;
-
-    juce::dsp::BallisticsFilter<float> envelopeFollower;
-    juce::AudioBuffer<float> envelopeFollowerOutputBuffer;
+    PeakLevelMeter _outputLevelMeter;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JucePluginTemplateAudioProcessor)
 };

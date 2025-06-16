@@ -14,7 +14,7 @@ JucePluginTemplateAudioProcessor::JucePluginTemplateAudioProcessor()
                         .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                       #endif
                    ),
-    _valueTreeState {*this, nullptr, "Parameters", createParameterLayout(parameters)}
+    _valueTreeState {*this, nullptr, "Parameters", createParameterLayout(_parameters)}
 {
 }
 
@@ -90,18 +90,11 @@ void JucePluginTemplateAudioProcessor::changeProgramName (int index, const juce:
 //==============================================================================
 void JucePluginTemplateAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    envelopeFollower.prepare(juce::dsp::ProcessSpec{
+    _outputLevelMeter.prepare(juce::dsp::ProcessSpec{
             .sampleRate = sampleRate,
             .maximumBlockSize = static_cast<juce::uint32>(samplesPerBlock),
             .numChannels = static_cast<juce::uint32>(getTotalNumInputChannels())
             });
-    envelopeFollower.setAttackTime(200.0f);
-    envelopeFollower.setReleaseTime(200.0f);
-    envelopeFollower.setLevelCalculationType(
-            juce::dsp::BallisticsFilter<float>::LevelCalculationType::peak
-            );
-
-    envelopeFollowerOutputBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
 }
 
 void JucePluginTemplateAudioProcessor::releaseResources()
@@ -146,15 +139,7 @@ void JucePluginTemplateAudioProcessor::processBlock (juce::AudioBuffer<float>& b
 
     _dspProcessor.process(buffer, gainValue);
 
-    const auto inBlock = juce::dsp::AudioBlock<float>(buffer).getSubsetChannelBlock(
-            0u, static_cast<size_t>(getTotalNumOutputChannels())
-            );
-    auto outBlock = juce::dsp::AudioBlock<float>{envelopeFollowerOutputBuffer};
-
-    envelopeFollower.process(juce::dsp::ProcessContextNonReplacing<float>{inBlock, outBlock});
-
-    auto last_sample = outBlock.getNumSamples() - 1;
-    outputLevelLeft = juce::Decibels::gainToDecibels(outBlock.getSample(0u, static_cast<int>(last_sample)));
+    _outputLevelMeter.process(buffer);
 }
 
 //==============================================================================
@@ -172,6 +157,18 @@ juce::AudioProcessorEditor* JucePluginTemplateAudioProcessor::createEditor()
     // a compile error or it will simply not use it yet.
     // The original editor constructor was: JucePluginTemplateAudioProcessorEditor (JucePluginTemplateAudioProcessor&);
     // This remains compatible. The editor will need to *access* processorRef.valueTreeState.
+}
+
+//==============================================================================
+
+float JucePluginTemplateAudioProcessor::getOutputPeakLevelDb(int channel) const
+{
+    return _outputLevelMeter.getLevelDb(channel);
+}
+
+float JucePluginTemplateAudioProcessor::getMonoOutputPeakLevelDb() const
+{
+    return _outputLevelMeter.getMonoPeakDb();
 }
 
 //==============================================================================

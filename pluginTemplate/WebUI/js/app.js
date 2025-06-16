@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(response => response.json()) // Directly parse JSON
                 .then(levelData => {
                     // The C++ side sends the level in Decibels (dBFS).
-                    const dbValue = levelData.left;
+                    const dbValue = levelData.output;
 
                     // 1. Update the number box with the precise value
                     const displayDb = isFinite(dbValue) ? dbValue.toFixed(1) : "-inf";
