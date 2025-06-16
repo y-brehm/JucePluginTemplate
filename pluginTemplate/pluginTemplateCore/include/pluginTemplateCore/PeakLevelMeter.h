@@ -26,6 +26,8 @@ public:
 
     float getMonoPeakDb() const;
 
+    void reset();
+
 private:
     std::vector<juce::Atomic<float>> peakGains;
 

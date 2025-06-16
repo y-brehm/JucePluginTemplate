@@ -6,6 +6,7 @@
 
 // Import the entire JUCE JavaScript library. The 'Juce' alias is a convention.
 import * as Juce from "./juce/index.js";
+import { initializeMetering } from "./metering.js";
 
 // This event listener ensures that the DOM is fully loaded before we try to manipulate it.
 document.addEventListener('DOMContentLoaded', () => {
@@ -56,53 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error("Bypass checkbox element not found.");
     }
-
-    // --- METERING ---
-    const meterBar = document.getElementById('meter-bar');
-    const peakValue = document.getElementById('peak-value');
-
-    if (meterBar && peakValue) {
-        // Listen for the 'outputLevel' event dispatched from the C++ timer callback
-        window.__JUCE__.backend.addEventListener("outputLevel", () => {
-            // When the event is received, fetch the corresponding JSON data.
-            fetch(Juce.getBackendResourceAddress("outputLevel.json"))
-                .then(response => response.json()) // Directly parse JSON
-                .then(levelData => {
-                    // The C++ side sends the level in Decibels (dBFS).
-                    const dbValue = levelData.output;
-
-                    // 1. Update the number box with the precise value
-                    const displayDb = isFinite(dbValue) ? dbValue.toFixed(1) : "-inf";
-                    peakValue.textContent = displayDb + " dB";
-
-                    // 2. Define the meter's visual range in dB.
-                    const minDb = -60.0;
-                    const maxDb = 6.0; // Extended to +6dB
-
-                    // 3. Clamp the incoming dB value to our meter's visual range for the bar.
-                    const clampedDb = Math.max(minDb, Math.min(dbValue, maxDb));
-                    
-                    // 4. Convert the clamped dB value to a percentage (0-100).
-                    const percentage = ((clampedDb - minDb) / (maxDb - minDb)) * 100;
-
-                    // 5. Update the meter bar's height.
-                    meterBar.style.height = percentage + '%';
-
-                    // 6. Change color based on the raw dB value.
-                    if (dbValue >= 0.0) {        // Red from 0dBFS up
-                        meterBar.style.backgroundColor = '#ff4500';
-                    } else if (dbValue >= -6.0) { // Yellow from -6dBFS to 0dBFS
-                        meterBar.style.backgroundColor = '#ffdd00';
-                    } else {                      // Green below -6dBFS
-                        meterBar.style.backgroundColor = '#00ff00';
-                    }
-                })
-                .catch(error => console.error('Error fetching meter level:', error));
-        });
-    } else {
-        console.error("Metering elements not found.");
-    }
-
+    
+    initializeMetering();
 
     console.log("Plugin UI initialized.");
 });

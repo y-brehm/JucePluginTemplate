@@ -90,11 +90,13 @@ void JucePluginTemplateAudioProcessor::changeProgramName (int index, const juce:
 //==============================================================================
 void JucePluginTemplateAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    _outputLevelMeter.prepare(juce::dsp::ProcessSpec{
-            .sampleRate = sampleRate,
-            .maximumBlockSize = static_cast<juce::uint32>(samplesPerBlock),
-            .numChannels = static_cast<juce::uint32>(getTotalNumInputChannels())
-            });
+    const auto spec = juce::dsp::ProcessSpec{
+            sampleRate,
+            static_cast<juce::uint32>(samplesPerBlock),
+            static_cast<juce::uint32>(getTotalNumInputChannels())
+    };
+    _inputLevelMeter.prepare(spec, 1700.0f);
+    _outputLevelMeter.prepare(spec, 1700.0f);
 }
 
 void JucePluginTemplateAudioProcessor::releaseResources()
@@ -132,11 +134,21 @@ void JucePluginTemplateAudioProcessor::processBlock (juce::AudioBuffer<float>& b
         buffer.clear (i, 0, buffer.getNumSamples());
     
     const bool isBypassed = *_valueTreeState.getRawParameterValue(BYPASS.getParamID());
-    const float gainValue = *_valueTreeState.getRawParameterValue(GAIN.getParamID());
 
-    if (isBypassed || buffer.getNumSamples() == 0)
+    if (isBypassed)
+    {
+        _inputLevelMeter.reset();
+        _outputLevelMeter.reset();
+        return;
+    }
+
+    if (buffer.getNumSamples() == 0)
         return;
 
+    
+    _inputLevelMeter.process(buffer);
+
+    const float gainValue = *_valueTreeState.getRawParameterValue(GAIN.getParamID());
     _dspProcessor.process(buffer, gainValue);
 
     _outputLevelMeter.process(buffer);
@@ -160,10 +172,10 @@ juce::AudioProcessorEditor* JucePluginTemplateAudioProcessor::createEditor()
 }
 
 //==============================================================================
-
-float JucePluginTemplateAudioProcessor::getOutputPeakLevelDb(int channel) const
+//
+float JucePluginTemplateAudioProcessor::getMonoInputPeakLevelDb() const
 {
-    return _outputLevelMeter.getLevelDb(channel);
+    return _inputLevelMeter.getMonoPeakDb();
 }
 
 float JucePluginTemplateAudioProcessor::getMonoOutputPeakLevelDb() const

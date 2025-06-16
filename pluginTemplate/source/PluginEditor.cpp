@@ -51,10 +51,11 @@ JucePluginTemplateAudioProcessorEditor::JucePluginTemplateAudioProcessorEditor (
 void JucePluginTemplateAudioProcessorEditor::registerDynamicEndpoints()
 {
     _dynamicResourceProvider.registerHandler(
-        "outputLevel.json",
+        "meterLevels.json",
         [this]
         {
             juce::DynamicObject::Ptr data{new juce::DynamicObject{}};
+            data->setProperty("input", _processorRef.getMonoInputPeakLevelDb());
             data->setProperty("output", _processorRef.getMonoOutputPeakLevelDb());
             return DynamicResourceProvider::createJsonResource(data.get());
         });
@@ -81,6 +82,5 @@ void JucePluginTemplateAudioProcessorEditor::resized()
 
 void JucePluginTemplateAudioProcessorEditor::timerCallback()
 {
-    _webBrowserComponent.emitEventIfBrowserIsVisible("outputLevel", juce::var{});
-
+    _webBrowserComponent.emitEventIfBrowserIsVisible("meterLevels", juce::var{});
 }

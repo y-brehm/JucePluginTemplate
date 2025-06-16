@@ -51,7 +51,7 @@ float PeakLevelMeter::getLevelDb(int channel) const
     if (juce::isPositiveAndBelow(channel, numChannels))
     {
         const auto currentPeak = peakGains[channel].get();
-        return juce::Decibels::gainToDecibels(currentPeak, -100.0f);
+        return juce::Decibels::gainToDecibels(currentPeak);
     }
 
     return -100.0f;
@@ -66,5 +66,11 @@ float PeakLevelMeter::getMonoPeakDb() const
     for (int i = 0; i < numChannels; ++i)
         maxPeak = std::max(maxPeak, peakGains[i].get());
 
-    return juce::Decibels::gainToDecibels(maxPeak, -100.0f);
+    return juce::Decibels::gainToDecibels(maxPeak);
+}
+
+void PeakLevelMeter::reset()
+{
+    for (auto& p : peakGains)
+        p.set(-120.0f);
 }

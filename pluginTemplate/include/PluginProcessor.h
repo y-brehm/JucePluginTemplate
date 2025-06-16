@@ -43,10 +43,8 @@ public:
         return _valueTreeState;
     }
 
-    [[nodiscard]] float getOutputPeakLevelDb(int channel) const;
-
     [[nodiscard]] float getMonoOutputPeakLevelDb() const;
-
+    [[nodiscard]] float getMonoInputPeakLevelDb() const;
 
 
 private:
@@ -63,6 +61,7 @@ private:
     juce::AudioProcessorValueTreeState _valueTreeState;
     DspProcessor _dspProcessor;
     PeakLevelMeter _outputLevelMeter;
+    PeakLevelMeter _inputLevelMeter;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JucePluginTemplateAudioProcessor)
 };

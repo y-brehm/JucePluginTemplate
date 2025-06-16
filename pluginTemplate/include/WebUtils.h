@@ -18,7 +18,7 @@ namespace WebUtils
         std::vector<std::byte> result((size_t) stream.getTotalLength());
         stream.setPosition(0);
         [[maybe_unused]] const auto bytesRead = stream.read(result.data(), result.size());
-        jassert(bytesRead == (ssize_t) result.size()); // Ensure we read the whole stream
+        jassert(bytesRead == (int) result.size()); // Ensure we read the whole stream
 
         return result;
     }
