@@ -148,8 +148,11 @@ void JucePluginTemplateAudioProcessor::processBlock (juce::AudioBuffer<float>& b
     
     _inputLevelMeter.process(buffer);
 
-    const float gainValue = *_valueTreeState.getRawParameterValue(GAIN.getParamID());
-    _dspProcessor.process(buffer, gainValue);
+    const float gainDb = *_valueTreeState.getRawParameterValue(GAIN.getParamID());
+    const float gainGain = juce::Decibels::decibelsToGain(gainDb);
+
+    const bool clippingValue = *_valueTreeState.getRawParameterValue(CLIPPING.getParamID());
+    _dspProcessor.process(buffer, gainGain, clippingValue);
 
     _outputLevelMeter.process(buffer);
 }
@@ -202,24 +205,35 @@ void JucePluginTemplateAudioProcessor::setStateInformation (const void* data, in
             _valueTreeState.replaceState (juce::ValueTree::fromXml (*xmlState));
 }
 
-juce::AudioProcessorValueTreeState::ParameterLayout
-JucePluginTemplateAudioProcessor::createParameterLayout(
-    JucePluginTemplateAudioProcessor::Parameters& parameters) {
+juce::AudioProcessorValueTreeState::ParameterLayout JucePluginTemplateAudioProcessor::createParameterLayout(JucePluginTemplateAudioProcessor::Parameters& parameters) 
+{
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
-  {
-    auto parameter = std::make_unique<juce::AudioParameterFloat>(
-        GAIN, "gain", juce::NormalisableRange<float>{0.f, 1.f, 0.01f, 0.9f}, 1.f);
-    parameters.gain = parameter.get();
-    layout.add(std::move(parameter));
-  }
+    {
+        auto parameter = std::make_unique<juce::AudioParameterFloat>(
+            GAIN, "gain", 
+            juce::NormalisableRange<float>{-24.0f, 24.0f, 0.1f}, 
+            0.0f,
+            juce::AudioParameterFloatAttributes{}.withLabel("dB"));
+        parameters.gain = parameter.get();
+        layout.add(std::move(parameter));
+    }
 
-  {
-    auto parameter = std::make_unique<juce::AudioParameterBool>(
-        BYPASS, "bypass", false,
-        juce::AudioParameterBoolAttributes{}.withLabel("Bypass"));
-    parameters.bypass = parameter.get();
-    layout.add(std::move(parameter));
-  }
+    {
+        auto parameter = std::make_unique<juce::AudioParameterBool>(
+            BYPASS, "bypass", false,
+            juce::AudioParameterBoolAttributes{}.withLabel("Bypass"));
+        parameters.bypass = parameter.get();
+        layout.add(std::move(parameter));
+    }
+
+    {
+        auto parameter = std::make_unique<juce::AudioParameterBool>(
+            CLIPPING, "Clipping", false,
+            juce::AudioParameterBoolAttributes{}.withLabel("Clipping"));
+        parameters.clipping = parameter.get();
+        layout.add(std::move(parameter));
+    }
+
 
   return layout;
 }

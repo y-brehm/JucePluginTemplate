@@ -22,11 +22,16 @@ private:
     JucePluginTemplateAudioProcessor& _processorRef;
     DynamicResourceProvider _dynamicResourceProvider;
 
+
     juce::WebSliderRelay _gainRelay;
     juce::WebToggleButtonRelay _bypassRelay;
+    juce::WebToggleButtonRelay _clippingRelay;
+
     juce::WebBrowserComponent _webBrowserComponent;
+
     juce::WebSliderParameterAttachment _gainSliderAttachment;
     juce::WebToggleButtonParameterAttachment _bypassAttachment;
+    juce::WebToggleButtonParameterAttachment _clippingAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JucePluginTemplateAudioProcessorEditor)
 };

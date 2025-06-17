@@ -51,6 +51,7 @@ private:
     struct Parameters
     {
         juce::AudioParameterFloat* gain   { nullptr };
+        juce::AudioParameterBool* clipping { nullptr };
         juce::AudioParameterBool* bypass { nullptr };
     };
     [[nodiscard]] static juce::AudioProcessorValueTreeState::ParameterLayout

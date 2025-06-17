@@ -141,11 +141,16 @@
     </div>
 
     <div class="controls-container">
-        <h1>Gain Control</h1>
+        <h1>Soft Clipper</h1>
 
         <div class="control-group">
             <label for="gainSlider">Gain</label>
-            <input type="range" id="gainSlider" min="0.0" max="1.0" step="0.001">
+            <input type="range" id="gainSlider" min="-24.0" max="24.0" step="0.1">
+        </div>
+
+        <div class="control-group bypass-group">
+            <input type="checkbox" id="clippingCheckbox">
+            <label for="clippingCheckbox">Enable Soft Clip</label> 
         </div>
 
         <div class="control-group bypass-group">

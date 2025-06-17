@@ -10,29 +10,23 @@ import { initializeMetering } from "./metering.js";
 
 // This event listener ensures that the DOM is fully loaded before we try to manipulate it.
 document.addEventListener('DOMContentLoaded', () => {
-    // --- GAIN SLIDER CONTROL ---
+    // --- gain SLIDER CONTROL ---
     const gainSlider = document.getElementById('gainSlider');
     if (gainSlider) {
         // Get the state object for the 'gain' parameter from the C++ backend.
-        // The string 'GAIN' must match the parameter ID in your C++ code.
+        // The string 'gain' must match the parameter ID in your C++ code.
         const gainSliderState = Juce.getSliderState('GAIN');
 
-        // When the user interacts with the HTML slider, send the new value to the backend.
-        // The value is automatically normalized (0.0 to 1.0) by the JUCE library.
         gainSlider.oninput = () => {
-            gainSliderState.setNormalisedValue(gainSlider.value);
+            // Here we must convert the slider's raw value to a normalised value
+            const properties = gainSliderState.properties;
+            const normalisedValue = (gainSlider.value - properties.start) / (properties.end - properties.start);
+            gainSliderState.setNormalisedValue(normalisedValue);
         };
 
-        // When the parameter changes on the backend (e.g., loading a preset, automation),
-        // update the HTML slider's position.
         gainSliderState.valueChangedEvent.addListener(() => {
-            gainSlider.value = gainSliderState.getNormalisedValue();
-        });
-
-        gainSliderState.propertiesChangedEvent.addListener(() => {
-            gainSlider.step = gainSliderState.properties.interval !== 0 ?
-                gainSliderState.properties.interval : 0.001;
-            // Note: A more robust approach might be needed depending on your NormalisableRange
+            // Here we convert the scaled value from the backend to the slider's raw value
+            gainSlider.value = gainSliderState.getScaledValue();
         });
     } else {
         console.error("Gain slider element not found.");
@@ -56,6 +50,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     } else {
         console.error("Bypass checkbox element not found.");
+    }
+    // --- CLIPPING BUTTON CONTROL (New) ---
+    const clippingCheckbox = document.getElementById('clippingCheckbox');
+    if (clippingCheckbox) {
+        // The ID must match the C++ ParameterID: "CLIPPING"
+        const clippingToggleState = Juce.getToggleState('CLIPPING');
+
+        clippingCheckbox.oninput = () => {
+            clippingToggleState.setValue(clippingCheckbox.checked);
+        };
+
+        clippingToggleState.valueChangedEvent.addListener(() => {
+            clippingCheckbox.checked = clippingToggleState.getValue();
+        });
+    } else {
+        console.error("Clipping checkbox element not found.")
+
     }
     
     initializeMetering();

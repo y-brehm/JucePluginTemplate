@@ -10,6 +10,7 @@ JucePluginTemplateAudioProcessorEditor::JucePluginTemplateAudioProcessorEditor (
       _processorRef (p),
       _gainRelay{GAIN.getParamID()},
       _bypassRelay{BYPASS.getParamID()},
+      _clippingRelay{CLIPPING.getParamID()},
       _webBrowserComponent(juce::WebBrowserComponent::Options{}
                               .withBackend(juce::WebBrowserComponent::Options::Backend::webview2)
                               .withWinWebView2Options(
@@ -27,6 +28,7 @@ JucePluginTemplateAudioProcessorEditor::JucePluginTemplateAudioProcessorEditor (
                                   juce::URL {LOCAL_DEV_SERVER_ADDRESS}.getOrigin())
                               .withOptionsFrom(_gainRelay)
                               .withOptionsFrom(_bypassRelay)
+                              .withOptionsFrom(_clippingRelay)
                              ),
       _gainSliderAttachment{
           *_processorRef.getValueTreeState().getParameter(GAIN.getParamID()),
@@ -35,6 +37,10 @@ JucePluginTemplateAudioProcessorEditor::JucePluginTemplateAudioProcessorEditor (
       _bypassAttachment{
           *_processorRef.getValueTreeState().getParameter(BYPASS.getParamID()),
           _bypassRelay,
+          nullptr},
+      _clippingAttachment{
+          *_processorRef.getValueTreeState().getParameter(CLIPPING.getParamID()),
+          _clippingRelay,
           nullptr}
 {
     registerDynamicEndpoints();

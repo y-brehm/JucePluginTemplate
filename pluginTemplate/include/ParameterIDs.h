@@ -5,3 +5,4 @@
 
 const juce::ParameterID GAIN{"GAIN", 1};
 const juce::ParameterID BYPASS{"BYPASS", 1};
+const juce::ParameterID CLIPPING{"CLIPPING", 1};
