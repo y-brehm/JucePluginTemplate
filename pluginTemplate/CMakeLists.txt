@@ -60,12 +60,6 @@ add_custom_command(
     VERBATIM
 )
 
-# 5. Create a target that depends on the creation of the zip file.
-#    The main plugin target will depend on this.
-add_custom_target(PackageWebApp
-    DEPENDS ${WEB_UI_ZIP_FILE}
-)
-
 # 6. Embed the final zip file as binary data.
 juce_add_binary_data(WebUIDataEmbed
     HEADER_NAME WebUIDataEmbed.h
@@ -99,7 +93,7 @@ juce_add_plugin(${PLUGIN_NAME}
     NEEDS_WEBVIEW2 TRUE
 )
 
-add_dependencies(${PLUGIN_NAME} PackageWebApp)
+add_dependencies(${PLUGIN_NAME} WebUIDataEmbed)
 # Needs to be deactivated for JUCE 8.0.8
 # target_compile_definitions(${PLUGIN_NAME}_VST3 PRIVATE JUCE_IGNORE_VST3_MISMATCHED_PARAMETER_ID_WARNING=1)
 target_compile_definitions(${PLUGIN_NAME} 
